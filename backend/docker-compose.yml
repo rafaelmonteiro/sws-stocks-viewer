@@ -1,0 +1,9 @@
+services:
+
+  api:
+    container_name: api
+    build:
+      context: .
+      dockerfile: ./.cicd/Dockerfile
+    ports:
+      - 3000:3000
