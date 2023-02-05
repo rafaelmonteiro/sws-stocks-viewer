@@ -4,6 +4,11 @@ SWS application to display companies/stock information.
 
 The API will be running on http://localhost:3000. For the UI, you can simply open `frontend/index.html` in your favourite
 browser: `open frontend/index.html`.
+---
+
+## Live Deployment
+
+[Railway](https://railway.app) was used to host both frontend and backend apps. They are available in the following URLs:
 
 **Frontend deployment:** https://sws-stocks-viewer.up.railway.app
 
