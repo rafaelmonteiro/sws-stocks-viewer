@@ -1,0 +1,161 @@
+<head>
+  <!--Leveraging the use of Vue's/Axios global build through a CDN for quick prototyping-->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<div id="app">
+  <div class="search-container">
+    <input type="text" v-model="searchTerm" />
+    <button @click="searchStocks">Search</button>
+  </div>
+  <div class="table-container">
+    <table class="stock-table">
+      <thead>
+        <tr>
+          <th @click="sortBy('name')">
+            Company Name
+            <i v-show="(sortKey === 'name')" :class="orderClass"></i>
+          </th>
+          <th @click="sortBy('uniqueSymbol')">
+            Stock Symbol
+            <i v-show="(sortKey === 'uniqueSymbol')" :class="orderClass"></i>
+          </th>
+          <th @click="sortBy('lastPrice')">
+            Last Price
+            <i v-show="(sortKey === 'lastPrice')" :class="orderClass"></i>
+          </th>
+          <th @click="sortBy('variation')">
+            Variation (%)
+            <i v-show="(sortKey === 'variation')" :class="orderClass"></i>
+          </th>
+          <th @click="sortBy('score.total')">
+            Score
+            <i v-show="(sortKey === 'score.total')" :class="orderClass"></i>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(stock, index) in filteredStocks" :key="index">
+          <td>{{ stock.name }}</td>
+          <td>{{ stock.uniqueSymbol }}</td>
+          <td>{{ stock.lastPrice }}</td>
+          <td :class="stock.variation < 0 ? 'negative' : 'positive'">{{ stock.variation }}</td>
+          <td>{{ stock.score.total }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="pagination-container">
+    <button @click="prevPage">Previous</button>
+    <button @click="nextPage">Next</button>
+    <div class="page-number">Page {{ currentPage }} of {{ totalPages }}</div>
+  </div>
+</div>
+
+<script>
+  const { createApp } = Vue;
+
+  createApp({
+    data() {
+      return {
+        stocks: [],
+        searchTerm: '',
+        sortKey: 'name',
+        sortOrder: 1,
+        perPage: 10,
+        currentPage: 1,
+        totalItems: 0,
+      }
+    },
+    mounted() {
+      this.searchStocks();
+    },
+    computed: {
+      orderClass() {
+        return (this.sortOrder === 1) ? 'sort-by-asc' : 'sort-by-desc';
+      },
+      skip() {
+        return (this.currentPage - 1) * this.perPage;
+      },
+      filteredStocks() {
+        let stocksResponse = this.stocks;
+        if (this.searchTerm) {
+          stocksResponse = this.filterBySearchTerm(stocksResponse);
+        }
+
+        this.addVirtualProperties(stocksResponse);
+
+        if (this.sortKey) {
+          this.sortResult(stocksResponse);
+        }
+        return stocksResponse;
+      },
+      totalPages() {
+        return Math.ceil(this.totalItems / this.perPage);
+      },
+    },
+    methods: {
+      sortBy(key) {
+        this.sortKey = key;
+        this.sortOrder *= -1;
+      },
+      sortResult(stocksArray) {
+        stocksArray.sort((a, b) => {
+          const sortKey = this.sortKey;
+          const order = this.sortOrder;
+
+          const aValue = this.fetchByDotOperator(a, sortKey);
+          const bValue = this.fetchByDotOperator(b, sortKey);
+
+          if (aValue < bValue) {
+            return -1 * order;
+          } else if (aValue > bValue) {
+            return order;
+          } else {
+            return 0;
+          }
+        });
+      },
+      fetchByDotOperator(object, value) {
+        return value.split('.').reduce((acc, curr) => acc[curr], object);
+      },
+      filterBySearchTerm(stocksArray) {
+        return stocksArray.filter(stock => {
+          return stock.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+                  stock.tickerSymbol.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+                  stock.score.total == this.searchTerm;
+        });
+      },
+      addVirtualProperties(filteredArray) {
+        filteredArray.forEach(stock => {
+          stock.lastPrice = (stock.sharePrices) ? stock.sharePrices[stock.sharePrices.length-1].price : '';
+          stock.variation = (stock.sharePrices) ? (stock.sharePrices[stock.sharePrices.length-1].price / stock.sharePrices[0].price).toFixed(2) : '';
+        })
+      },
+      async searchStocks() {
+        try {
+          const apiHost = 'https://sws-stocks-viewer-api.up.railway.app';
+          const response = await axios.get(`${apiHost}/companies?search=${this.searchTerm}&includeSharePrices=1&take=${this.perPage}&skip=${this.skip}`);
+          this.stocks = response.data.data;
+          this.totalItems = response.data.totalCount;
+        } catch (error) {
+          console.error(error);
+        }
+      },
+      prevPage() {
+        if (this.currentPage > 1) {
+          this.currentPage--;
+        }
+        this.searchStocks();
+      },
+      nextPage() {
+        if (this.currentPage < this.totalPages) {
+          this.currentPage++;
+        }
+        this.searchStocks();
+      }
+    }
+  }).mount('#app')
+</script>
