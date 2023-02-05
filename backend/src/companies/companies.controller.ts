@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Query, ValidationPipe } from '@nestjs/common';
+import {
+  CacheInterceptor,
+  Controller,
+  Get,
+  Param,
+  Query,
+  UseInterceptors,
+  ValidationPipe,
+} from '@nestjs/common';
 import { CompaniesService } from './companies.service';
 import { Company } from './entities/company.entity';
 import { GetCompaniesFilterDto } from './dto/get-companies-filter.dto';
@@ -6,6 +14,7 @@ import { GetCompaniesPaginationDto } from './dto/get-companies-pagination.dto';
 import { PaginatedCompaniesDto } from './dto/paginated-companies.dto';
 
 @Controller('companies')
+@UseInterceptors(CacheInterceptor)
 export class CompaniesController {
   constructor(private companyService: CompaniesService) {}
 

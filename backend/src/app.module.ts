@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -16,6 +16,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       namingStrategy: new SnakeNamingStrategy(),
     }),
     CompaniesModule,
+    CacheModule.register({ isGlobal: true, ttl: 20000 }),
   ],
   controllers: [AppController],
   providers: [AppService],
