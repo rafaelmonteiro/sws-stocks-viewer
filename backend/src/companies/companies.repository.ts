@@ -20,12 +20,13 @@ export class CompaniesRepository extends Repository<Company> {
   private logger = new Logger('CompaniesRepository');
   private DEFAULT_TAKE = 10;
   private DEFAULT_SKIP = 0;
+  private DEFAULT_ORDER_BY = 'company.name';
 
   async search(
     filterDto: GetCompaniesFilterDto,
     paginationDto: GetCompaniesPaginationDto,
   ): Promise<Company[]> {
-    const { take, skip } = paginationDto;
+    const { take, skip, orderBy } = paginationDto;
 
     try {
       const queryBuilder = this.createQueryBuilder('company');
@@ -33,6 +34,7 @@ export class CompaniesRepository extends Repository<Company> {
       query.leftJoinAndSelect('company.score', 'score');
       query.take(take ?? this.DEFAULT_TAKE);
       query.skip(skip ?? this.DEFAULT_SKIP);
+      query.orderBy(orderBy ?? this.DEFAULT_ORDER_BY);
 
       return await query.getMany();
     } catch (error) {
@@ -48,19 +50,12 @@ export class CompaniesRepository extends Repository<Company> {
     filterDto: GetCompaniesFilterDto,
     queryBuilder: SelectQueryBuilder<Company>,
   ) {
-    const { search, symbol, score, includeSharePrices } = filterDto;
+    const { search, score, includeSharePrices } = filterDto;
 
     if (search) {
       queryBuilder.andWhere(
-        '(company.name LIKE :search OR company.tickerSymbol LIKE :search)',
+        '(company.name LIKE :search OR company.uniqueSymbol LIKE :search)',
         { search: `%${search}%` },
-      );
-    }
-
-    if (symbol) {
-      queryBuilder.andWhere(
-        '(company.exchangeSymbol LIKE :symbol)',
-        { symbol: `%${symbol}%` },
       );
     }
 

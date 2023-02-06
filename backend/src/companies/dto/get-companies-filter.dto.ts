@@ -5,9 +5,6 @@ export class GetCompaniesFilterDto {
   search: string;
 
   @IsOptional()
-  symbol: string;
-
-  @IsOptional()
   score: string;
 
   @IsOptional()
