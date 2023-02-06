@@ -8,7 +8,12 @@
 <div id="app">
   <div class="search-container">
     <input type="text" v-model="searchTerm" />
-    <button @click="searchStocks">Search</button>
+    <button @click="searchOperation">Search</button>
+    <div class="slider">
+      <label for="score">Score</label>
+      <input type="range" id="score" min="0" max="20" v-model="score" @change="searchOperation">
+      Value: {{ (score === '0') ? 'All' : score }}
+    </div>
   </div>
   <div class="table-container">
     <table class="stock-table">
@@ -50,7 +55,6 @@
   <div class="pagination-container">
     <button @click="prevPage">Previous</button>
     <button @click="nextPage">Next</button>
-    <div class="page-number">Page {{ currentPage }} of {{ totalPages }}</div>
   </div>
 </div>
 
@@ -61,6 +65,7 @@
     data() {
       return {
         stocks: [],
+        score: '0',
         searchTerm: '',
         sortKey: 'name',
         sortOrder: 1,
@@ -81,10 +86,6 @@
       },
       filteredStocks() {
         let stocksResponse = this.stocks;
-        if (this.searchTerm) {
-          stocksResponse = this.filterBySearchTerm(stocksResponse);
-        }
-
         this.addVirtualProperties(stocksResponse);
 
         if (this.sortKey) {
@@ -121,25 +122,25 @@
       fetchByDotOperator(object, value) {
         return value.split('.').reduce((acc, curr) => acc[curr], object);
       },
-      filterBySearchTerm(stocksArray) {
-        return stocksArray.filter(stock => {
-          return stock.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                  stock.tickerSymbol.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                  stock.score.total == this.searchTerm;
-        });
-      },
       addVirtualProperties(filteredArray) {
         filteredArray.forEach(stock => {
           stock.lastPrice = (stock.sharePrices) ? stock.sharePrices[stock.sharePrices.length-1].price : '';
           stock.variation = (stock.sharePrices) ? (stock.sharePrices[stock.sharePrices.length-1].price / stock.sharePrices[0].price).toFixed(2) : '';
         })
       },
+      searchOperation() {
+        this.currentPage = 1;
+        this.searchStocks();
+      },
       async searchStocks() {
         try {
+          // const apiHost = 'http://localhost:3000'; // uncomment this line if running locally
           const apiHost = 'https://sws-stocks-viewer-api.up.railway.app';
-          const response = await axios.get(`${apiHost}/companies?search=${this.searchTerm}&includeSharePrices=1&take=${this.perPage}&skip=${this.skip}`);
+
+          const scoreFilterValue = (this.score === '0') ? '' : this.score;
+          const response = await axios.get(`${apiHost}/companies?search=${this.searchTerm}&includeSharePrices=1&take=${this.perPage}&skip=${this.skip}&score=${scoreFilterValue}`);
           this.stocks = response.data.data;
-          this.totalItems = response.data.totalCount;
+          this.totalItems = (this.stocks.length < this.perPage) ? this.stocks.length : response.data.totalCount;
         } catch (error) {
           console.error(error);
         }
