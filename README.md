@@ -4,7 +4,6 @@ SWS application to display companies/stock information.
 
 The API will be running on http://localhost:3000. For the UI, you can simply open `frontend/index.html` in your favourite
 browser: `open frontend/index.html`.
----
 
 ## Live Deployment
 
