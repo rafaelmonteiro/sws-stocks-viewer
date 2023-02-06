@@ -1,6 +1,7 @@
 import * as request from 'supertest';
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, CacheInterceptor } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { CompaniesModule } from '../src/companies/companies.module';
@@ -21,7 +22,10 @@ describe('Companies controller (e2e)', () => {
         }),
         CompaniesModule,
       ],
-    }).compile();
+    })
+      .overrideInterceptor(CacheInterceptor)
+      .useValue(APP_INTERCEPTOR)
+      .compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
@@ -95,7 +99,7 @@ describe('Companies controller (e2e)', () => {
 
   it('/companies filter by exchange symbol (GET)', () => {
     return request(app.getHttpServer())
-      .get('/companies?symbol=ASX')
+      .get('/companies?search=ASX')
       .expect(200)
       .expect((response) => {
         expect(response.body).toHaveProperty('data');
