@@ -7,11 +7,11 @@ browser: `open frontend/index.html`.
 
 ## Live Deployment
 
-[Railway](https://railway.app) was used to host both frontend and backend apps. They are available in the following URLs:
+[Vercel](https://vercel.com) was used to host both frontend and backend apps. They are available in the following URLs:
 
-**Frontend deployment:** https://sws-stocks-viewer.up.railway.app
+**Frontend deployment:** https://sws-stocks-viewer.vercel.app
 
-**Backend deployment:** https://sws-stocks-viewer-api.up.railway.app
+**Backend deployment:** https://sws-stocks-viewer-api.vercel.app
 
 ## Backend
 

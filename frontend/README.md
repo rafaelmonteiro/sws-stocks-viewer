@@ -6,4 +6,4 @@ By leveraging the use of Vue/Axios global build through a CDN this simple UI sho
 the API.
 
 * No installation required
-* Live URL: https://sws-stocks-viewer.up.railway.app
+* Live URL: https://sws-stocks-viewer.vercel.app

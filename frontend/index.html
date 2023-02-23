@@ -135,7 +135,7 @@
       async searchStocks() {
         try {
           // const apiHost = 'http://localhost:3000'; // uncomment this line if running locally
-          const apiHost = 'https://sws-stocks-viewer-api.up.railway.app';
+          const apiHost = 'https://sws-stocks-viewer-api.vercel.app';
 
           const scoreFilterValue = (this.score === '0') ? '' : this.score;
           const response = await axios.get(`${apiHost}/companies?search=${this.searchTerm}&includeSharePrices=1&take=${this.perPage}&skip=${this.skip}&score=${scoreFilterValue}`);
